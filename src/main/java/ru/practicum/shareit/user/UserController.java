@@ -44,7 +44,6 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public UserDto delete(@PathVariable Long userId) {
         log.info("Получен DELETE-запрос: '/users' на удаление пользователя с ID={}", userId);
-        UserDto userDto = userService.delete(userId);
-        return userDto;
+        return userService.delete(userId);
     }
 }
