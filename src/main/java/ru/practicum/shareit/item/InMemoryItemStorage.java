@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Component("InMemoryItemStorage")
 public class InMemoryItemStorage implements ItemStorage {
 
-    public Map<Long, Item> items = new HashMap<>();
+    private Map<Long, Item> items = new HashMap<>();
     private Long itemId = 0L;
 
     @Override
@@ -88,7 +88,7 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     private void validateItem(Item item) {
-        if ((item.getName().isEmpty()) || (item.getDescription().isEmpty()) || (item.getAvailable() == null)) {
+        if (item.getName().isEmpty() || item.getDescription().isEmpty() || item.getAvailable() == null) {
             throw new ValidationException("Ошибка валидации вещи");
         }
     }

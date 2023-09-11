@@ -9,7 +9,7 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 
-public class Mapper {
+public final class Mapper {
     public static ItemDto toItemDto(Item item) {
         return new ItemDto(
                 item.getId(),

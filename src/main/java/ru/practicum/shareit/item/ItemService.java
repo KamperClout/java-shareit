@@ -7,6 +7,8 @@ import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.mapper.Mapper;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserService;
 
 
 import java.util.List;
@@ -16,14 +18,18 @@ import java.util.stream.Collectors;
 @Service
 public class ItemService {
     private ItemStorage itemStorage;
+    private UserService userService;
 
     @Autowired
-    public ItemService(@Qualifier("InMemoryItemStorage") ItemStorage itemStorage) {
+    public ItemService(@Qualifier("InMemoryItemStorage") ItemStorage itemStorage,UserService userService) {
         this.itemStorage = itemStorage;
+        this.userService = userService;
     }
 
     public ItemDto create(ItemDto itemDto, Long ownerId) {
-        return Mapper.toItemDto(itemStorage.create(Mapper.toItem(itemDto, ownerId)));
+        User user = Mapper.toUser(userService.getUserById(ownerId));
+        Item item = Mapper.toItem(itemDto,user.getId());
+        return Mapper.toItemDto(itemStorage.create(item));
     }
 
     public List<ItemDto> findAllItems(Long ownderId) {
@@ -37,14 +43,16 @@ public class ItemService {
     }
 
     public ItemDto update(ItemDto itemDto, Long ownerId, Long itemId) {
-        if (itemDto.getId() == null) {
-            itemDto.setId(itemId);
+        User user = Mapper.toUser(userService.getUserById(ownerId));
+        Item item = Mapper.toItem(itemDto,user.getId());
+        if (item.getId() == null) {
+            item.setId(itemId);
         }
         Item oldItem = itemStorage.getItemById(itemId);
         if (!oldItem.getOwnerId().equals(ownerId)) {
             throw new ItemNotFoundException("У пользователя нет такой вещи!");
         }
-        return Mapper.toItemDto(itemStorage.update(Mapper.toItem(itemDto, ownerId)));
+        return Mapper.toItemDto(itemStorage.update(item));
     }
 
     public ItemDto delete(Long itemId, Long ownerId) {

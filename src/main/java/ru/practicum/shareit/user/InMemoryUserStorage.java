@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Component("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
-    public Map<Long, User> users = new HashMap<>();
+    private Map<Long, User> users = new HashMap<>();
     private Long userId = 0L;
 
     @Override
@@ -22,15 +22,14 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        if (users.values().stream().noneMatch(u -> u.getEmail().equals(user.getEmail()))) {
-            if (isValidUser(user)) {
-                if (user.getId() == null) {
-                    user.setId(++userId);
-                }
-                users.put(user.getId(), user);
-            }
-        } else {
+        if (users.values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()))) {
             throw new UserAlreadyExistsException("Пользователь с E-mail=" + user.getEmail() + " уже существует");
+        }
+        if (isValidUser(user)) {
+            if (user.getId() == null) {
+                user.setId(++userId);
+            }
+            users.put(user.getId(), user);
         }
         return user;
     }
@@ -51,12 +50,11 @@ public class InMemoryUserStorage implements UserStorage {
         }
         if (users.values().stream()
                 .filter(u -> u.getEmail().equals(user.getEmail()))
-                .allMatch(u -> u.getId().equals(user.getId()))) {
-            if (isValidUser(user)) {
-                users.put(user.getId(), user);
-            }
-        } else {
+                .anyMatch(u -> !u.getId().equals(user.getId()))) {
             throw new UserAlreadyExistsException("Пользователь с E-mail=" + user.getEmail() + " уже существует!");
+        }
+        if (isValidUser(user)) {
+            users.put(user.getId(), user);
         }
         return user;
     }
@@ -84,7 +82,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (!user.getEmail().contains("@")) {
             throw new ValidationException("Некорректный e-mail пользователя: " + user.getEmail());
         }
-        if ((user.getName().isEmpty()) || (user.getName().contains(" "))) {
+        if (user.getName().isEmpty() || user.getName().contains(" ")) {
             throw new ValidationException("Некорректный логин пользователя: " + user.getName());
         }
         return true;
