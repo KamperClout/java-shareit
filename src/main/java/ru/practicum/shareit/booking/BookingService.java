@@ -11,11 +11,15 @@ import ru.practicum.shareit.exceptions.BookingNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.booking.Status.REJECTED;
+import static ru.practicum.shareit.booking.Status.WAITING;
 
 @Service
 @Slf4j
@@ -76,14 +80,14 @@ public class BookingService {
             }
         } else if ((isItemOwner(booking.getItem().getId(), userId)) &&
                 (!booking.getStatus().equals(Status.CANCELED))) {
-            if (!booking.getStatus().equals(Status.WAITING)) {
+            if (!booking.getStatus().equals(WAITING)) {
                 throw new ValidationException("Решение по бронированию уже принято!");
             }
             if (approved) {
                 booking.setStatus(Status.APPROVED);
                 log.info("Пользователь с ID={} подтвердил бронирование с ID={}", userId, bookingId);
             } else {
-                booking.setStatus(Status.REJECTED);
+                booking.setStatus(REJECTED);
                 log.info("Пользователь с ID={} отклонил бронирование с ID={}", userId, bookingId);
             }
         } else {
@@ -115,32 +119,38 @@ public class BookingService {
         if (userService.getUserById(userId) == null) {
             throw new UserNotFoundException("Пользователь с ID=" + userId + " не найден!");
         }
+        User booker = userService.findUserById(userId);
+        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         List<Booking> bookings;
-        Sort sortByStartDesc = Sort.by(Sort.Direction.DESC, "start");
         switch (state) {
             case "ALL":
-                bookings = bookingStorage.findByBookerId(userId, sortByStartDesc);
-                break;
-            case "CURRENT":
-                bookings = bookingStorage.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId, LocalDateTime.now(),
-                        LocalDateTime.now(), sortByStartDesc);
-                break;
-            case "PAST":
-                bookings = bookingStorage.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(), sortByStartDesc);
-                break;
-            case "FUTURE":
-                bookings = bookingStorage.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(), sortByStartDesc);
+                bookings = bookingStorage.findAllByBookerId(userId, sort);
                 break;
             case "WAITING":
-                bookings = bookingStorage.findByBookerIdAndStatus(userId, Status.WAITING, sortByStartDesc);
+                bookings = bookingStorage.findAllByBookerIdAndStatus(booker.getId(),
+                        WAITING, sort);
                 break;
             case "REJECTED":
-                bookings = bookingStorage.findByBookerIdAndStatus(userId, Status.REJECTED, sortByStartDesc);
+                bookings = bookingStorage.findAllByBookerIdAndStatus(booker.getId(),
+                        REJECTED, sort);
+                break;
+            case "PAST":
+                bookings = bookingStorage.findAllByBookerIdAndEndBefore(booker.getId(),
+                        LocalDateTime.now(), sort);
+                break;
+            case "FUTURE":
+                bookings = bookingStorage.findAllByBookerIdAndStartAfter(booker.getId(),
+                        LocalDateTime.now(), sort);
+                break;
+            case "CURRENT":
+                bookings = bookingStorage.findAllByBookerIdAndStartBeforeAndEndAfter(booker.getId(),
+                        LocalDateTime.now(),LocalDateTime.now() ,sort);
                 break;
             default:
                 throw new ValidationException("Unknown state: " + state);
         }
-        return bookings.stream()
+        return bookings
+                .stream()
                 .map(bookingMapper::toBookingDto)
                 .collect(Collectors.toList());
     }
@@ -168,10 +178,10 @@ public class BookingService {
                         sortByStartDesc);
                 break;
             case "WAITING":
-                bookings = bookingStorage.findByItem_Owner_IdAndStatus(userId, Status.WAITING, sortByStartDesc);
+                bookings = bookingStorage.findByItem_Owner_IdAndStatus(userId, WAITING, sortByStartDesc);
                 break;
             case "REJECTED":
-                bookings = bookingStorage.findByItem_Owner_IdAndStatus(userId, Status.REJECTED, sortByStartDesc);
+                bookings = bookingStorage.findByItem_Owner_IdAndStatus(userId, REJECTED, sortByStartDesc);
                 break;
             default:
                 throw new ValidationException("Unknown state: " + state);

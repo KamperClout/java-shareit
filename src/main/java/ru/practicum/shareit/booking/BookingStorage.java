@@ -8,16 +8,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingStorage extends JpaRepository<Booking, Long> {
-    List<Booking> findByBookerId(Long bookerId, Sort sort);
+    List<Booking> findAllByBookerId(Long bookerId, Sort sort);
 
-    List<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfter(Long bookerId, LocalDateTime start,
+    List<Booking> findAllByBookerIdAndStartBeforeAndEndAfter(Long bookerId, LocalDateTime start,
                                                               LocalDateTime end, Sort sort);
 
-    List<Booking> findByBookerIdAndEndIsBefore(Long bookerId, LocalDateTime end, Sort sort);
+    List<Booking> findAllByBookerIdAndEndBefore(Long bookerId, LocalDateTime end, Sort sort);
 
-    List<Booking> findByBookerIdAndStartIsAfter(Long bookerId, LocalDateTime start, Sort sort);
+    List<Booking> findAllByBookerIdAndStartAfter(Long bookerId, LocalDateTime start, Sort sort);
 
-    List<Booking> findByBookerIdAndStatus(Long bookerId, Status status, Sort sort);
+    List<Booking> findAllByBookerIdAndStatus(Long bookerId, Status status, Sort sort);
 
     List<Booking> findByItem_Owner_Id(Long ownerId, Sort sort);
 
