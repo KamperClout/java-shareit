@@ -144,7 +144,7 @@ public class BookingService {
                 break;
             case "CURRENT":
                 bookings = bookingStorage.findAllByBookerIdAndStartBeforeAndEndAfter(booker.getId(),
-                        LocalDateTime.now(),LocalDateTime.now() ,sort);
+                        LocalDateTime.now(), LocalDateTime.now(), sort);
                 break;
             default:
                 throw new ValidationException("Unknown state: " + state);
