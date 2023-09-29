@@ -11,7 +11,6 @@ import ru.practicum.shareit.exceptions.BookingNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemService;
-import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
@@ -26,12 +25,16 @@ public class BookingService {
 
     private final ItemService itemService;
 
+    private final BookingMapper bookingMapper;
+
     @Autowired
     @Lazy
-    public BookingService(BookingStorage bookingStorage, UserService userService, ItemService itemService) {
+    public BookingService(BookingStorage bookingStorage, UserService userService, ItemService itemService,
+                          BookingMapper bookingMapper) {
         this.bookingStorage = bookingStorage;
         this.userService = userService;
         this.itemService = itemService;
+        this.bookingMapper = bookingMapper;
     }
 
     public BookingDto createBooking(BookingForItem bookingForItemDto, Long bookerId) {
@@ -46,12 +49,12 @@ public class BookingService {
         if (!itemService.findItemById(bookingForItemDto.getItemId()).getAvailable()) {
             throw new ValidationException("Вещь недоступна для бронирования");
         }
-        Booking booking = Mapper.toBooking(bookingForItemDto, bookerId);
+        Booking booking = bookingMapper.toBooking(bookingForItemDto, bookerId);
         if (bookerId.equals(booking.getItem().getOwner().getId())) {
             throw new BookingNotFoundException("Вещь с id=" + bookingForItemDto.getItemId() +
                     " недоступна для бронирования самим владельцем!");
         }
-        return Mapper.toBookingDto(bookingStorage.save(booking));
+        return bookingMapper.toBookingDto(bookingStorage.save(booking));
     }
 
     public BookingDto update(Long bookingId, Long userId, Boolean approved) {
@@ -91,7 +94,7 @@ public class BookingService {
             }
         }
 
-        return Mapper.toBookingDto(bookingStorage.save(booking));
+        return bookingMapper.toBookingDto(bookingStorage.save(booking));
     }
 
     public BookingDto getBookingById(Long bookingId, Long userId) {
@@ -101,7 +104,7 @@ public class BookingService {
         Booking booking = bookingStorage.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException("Бронирование с ID=" + bookingId + " не найдено!"));
         if (booking.getBooker().getId().equals(userId) || isItemOwner(booking.getItem().getId(), userId)) {
-            return Mapper.toBookingDto(booking);
+            return bookingMapper.toBookingDto(booking);
         } else {
             throw new UserNotFoundException("Посмотреть данные бронирования может только владелец вещи" +
                     " или бронирующий ее!");
@@ -138,7 +141,7 @@ public class BookingService {
                 throw new ValidationException("Unknown state: " + state);
         }
         return bookings.stream()
-                .map(Mapper::toBookingDto)
+                .map(bookingMapper::toBookingDto)
                 .collect(Collectors.toList());
     }
 
@@ -174,7 +177,7 @@ public class BookingService {
                 throw new ValidationException("Unknown state: " + state);
         }
         return bookings.stream()
-                .map(Mapper::toBookingDto)
+                .map(bookingMapper::toBookingDto)
                 .collect(Collectors.toList());
     }
 

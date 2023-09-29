@@ -4,10 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.BookingService;
-import ru.practicum.shareit.booking.BookingStorage;
-import ru.practicum.shareit.booking.Status;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
@@ -16,12 +14,12 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.UserService;
 
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,32 +37,41 @@ public class ItemService {
 
     private final BookingStorage bookingStorage;
 
+    private final ItemMapper itemMapper;
+
+    private final BookingMapper bookingMapper;
+
     @Autowired
     @Lazy
     public ItemService(ItemStorage itemStorage, UserService userService, CommentStorage commentStorage,
-                       BookingService bookingService, BookingStorage bookingStorage) {
+                       BookingService bookingService, BookingStorage bookingStorage, ItemMapper itemMapper
+            , BookingMapper bookingMapper) {
         this.itemStorage = itemStorage;
         this.userService = userService;
         this.commentStorage = commentStorage;
         this.bookingService = bookingService;
         this.bookingStorage = bookingStorage;
+        this.itemMapper = itemMapper;
+        this.bookingMapper = bookingMapper;
     }
 
     public ItemDto create(ItemDto itemDto, Long ownerId) {
         if (userService.getUserById(ownerId) == null) {
             throw new UserNotFoundException("Пользователь с id=" + ownerId + " не найден");
         }
-        return Mapper.toItemDto(itemStorage.save(Mapper.toItem(itemDto, ownerId)));
+        return itemMapper.toItemDto(itemStorage.save(itemMapper.toItem(itemDto, ownerId)));
     }
 
+    @Transactional(readOnly = true)
     public List<ItemDto> findAllItems(Long ownerId) {
         List<ItemDto> itemsDto = itemStorage.findByOwnerId(ownerId).stream()
-                .map(Mapper::toItemOwnerDto)
+                .map(itemMapper::toItemOwnerDto)
+                .sorted(Comparator.comparing(ItemDto::getId))
                 .collect(Collectors.toList());
         List<Booking> bookings = bookingStorage.findAllByOwnerId(ownerId,
                 Sort.by(Sort.Direction.ASC, "start"));
         List<BookingShortDto> bookingDtoShorts = bookings.stream()
-                .map(Mapper::toBookingShortDto)
+                .map(bookingMapper::toBookingShortDto)
                 .collect(Collectors.toList());
         itemsDto.forEach(itemDto -> {
             setBookings(itemDto, bookingDtoShorts);
@@ -72,6 +79,7 @@ public class ItemService {
         return itemsDto;
     }
 
+    @Transactional(readOnly = true)
     public ItemDto getItemById(Long id, Long userId) {
         ItemDto itemDto;
         Item item = itemStorage.findById(id)
@@ -79,13 +87,13 @@ public class ItemService {
         List<Booking> bookings = bookingStorage.findByItemIdAndStatus(id, Status.APPROVED,
                 Sort.by(Sort.Direction.ASC, "start"));
         List<BookingShortDto> bookingDtoShorts = bookings.stream()
-                .map(Mapper::toBookingShortDto)
+                .map(bookingMapper::toBookingShortDto)
                 .collect(Collectors.toList());
         if (userId.equals(item.getOwner().getId())) {
-            itemDto = Mapper.toItemOwnerDto(item);
+            itemDto = itemMapper.toItemOwnerDto(item);
             setBookings(itemDto, bookingDtoShorts);
         } else {
-            itemDto = Mapper.toItemDto(item);
+            itemDto = itemMapper.toItemDto(item);
         }
         return itemDto;
     }
@@ -96,6 +104,7 @@ public class ItemService {
     }
 
 
+    @Transactional
     public ItemDto update(ItemDto itemDto, Long ownerId, Long itemId) {
         if (userService.getUserById(ownerId) == null) {
             throw new UserNotFoundException("Пользователь с id=" + ownerId + " не найден!");
@@ -114,29 +123,31 @@ public class ItemService {
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
         }
-        return Mapper.toItemDto(itemStorage.save(item));
+        return itemMapper.toItemDto(itemStorage.save(item));
     }
 
     public void delete(Long itemId, Long ownerId) {
         Item item = itemStorage.findById(itemId).orElseThrow(() -> new ItemNotFoundException("Вещь с id " + itemId + " не найдена"));
-        if (!item.getOwner().equals(ownerId)) {
+        if (!item.getOwner().getId().equals(ownerId)) {
             throw new ItemNotFoundException("У пользователя нет такой вещи!");
         }
         itemStorage.deleteById(itemId);
     }
 
+    @Transactional(readOnly = true)
     public List<ItemDto> getItemsBySearchQuery(String text) {
         List<ItemDto> searchItems = new ArrayList<>();
         if (!text.isBlank()) {
             text = text.toLowerCase();
             searchItems = itemStorage.getItemsBySearchQuery(text)
                     .stream()
-                    .map(Mapper::toItemDto)
+                    .map(itemMapper::toItemDto)
                     .collect(Collectors.toList());
         }
         return searchItems;
     }
 
+    @Transactional
     public CommentDto createComment(CommentDto commentDto, Long itemId, Long userId) {
         if (userService.getUserById(userId) == null) {
             throw new UserNotFoundException("Пользователь с id " + userId + " не найден!");
@@ -151,23 +162,23 @@ public class ItemService {
         } else {
             throw new ValidationException("Данный пользователь вещь не бронировал!");
         }
-        return Mapper.toCommentDto(commentStorage.save(comment));
+        return itemMapper.toCommentDto(commentStorage.save(comment));
     }
 
     public List<CommentDto> getCommentsByItemId(Long itemId) {
         return commentStorage.findAllByItem_Id(itemId,
                         Sort.by(Sort.Direction.DESC, "created")).stream()
-                .map(Mapper::toCommentDto)
+                .map(itemMapper::toCommentDto)
                 .collect(toList());
     }
 
     private void setBookings(ItemDto itemDto, List<BookingShortDto> bookings) {
         itemDto.setLastBooking(bookings.stream()
-                .filter(booking -> booking.getItem().getId() == itemDto.getId() &&
+                .filter(booking -> booking.getItem().getId().equals(itemDto.getId()) &&
                         booking.getStartTime().isBefore(LocalDateTime.now()))
                 .reduce((a, b) -> b).orElse(null));
         itemDto.setNextBooking(bookings.stream()
-                .filter(booking -> booking.getItem().getId() == itemDto.getId() &&
+                .filter(booking -> booking.getItem().getId().equals(itemDto.getId()) &&
                         booking.getStartTime().isAfter(LocalDateTime.now()))
                 .reduce((a, b) -> a).orElse(null));
     }

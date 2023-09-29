@@ -6,7 +6,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.UserAlreadyExistsException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
-import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
@@ -24,19 +23,19 @@ public class UserService {
 
     public List<UserDto> getUsers() {
         return userStorage.findAll().stream()
-                .map(Mapper::toUserDto)
+                .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
 
     public UserDto getUserById(Long id) {
-        return Mapper.toUserDto(userStorage.findById(id)
+        return UserMapper.toUserDto(userStorage.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь с ID=" + id + " не найден!")));
     }
 
     public UserDto create(UserDto userDto) {
         try {
-            return Mapper.toUserDto(userStorage.save(Mapper.toUser(userDto)));
+            return UserMapper.toUserDto(userStorage.save(UserMapper.toUser(userDto)));
         } catch (DataIntegrityViolationException e) {
             throw new UserAlreadyExistsException("Пользователь с E-mail=" +
                     userDto.getEmail() + " уже существует!");
@@ -64,7 +63,7 @@ public class UserService {
             }
 
         }
-        return Mapper.toUserDto(userStorage.save(user));
+        return UserMapper.toUserDto(userStorage.save(user));
     }
 
 
