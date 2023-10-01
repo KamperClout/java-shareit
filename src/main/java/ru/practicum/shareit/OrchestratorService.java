@@ -17,7 +17,7 @@ public class OrchestratorService {
     private final BookingService bookingService;
 
     @Autowired
-    public OrchestratorService(UserService userService, ItemService itemService, BookingService bookingService){
+    public OrchestratorService(UserService userService, ItemService itemService, BookingService bookingService) {
         this.userService = userService;
         this.itemService = itemService;
         this.bookingService = bookingService;
@@ -30,6 +30,7 @@ public class OrchestratorService {
         }
         return exist;
     }
+
     public boolean isAvailableItem(Long itemId) {
         return itemService.findItemById(itemId).getAvailable();
     }

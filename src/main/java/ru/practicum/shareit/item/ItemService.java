@@ -42,8 +42,8 @@ public class ItemService {
 
     @Autowired
     @Lazy
-    public ItemService(ItemStorage itemStorage, CommentStorage commentStorage
-            , BookingStorage bookingStorage, ItemMapper itemMapper,
+    public ItemService(ItemStorage itemStorage, CommentStorage commentStorage,
+                       BookingStorage bookingStorage, ItemMapper itemMapper,
                        BookingMapper bookingMapper, OrchestratorService orchestratorService) {
         this.itemStorage = itemStorage;
         this.commentStorage = commentStorage;
