@@ -5,14 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.OrchestratorService;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingForItem;
 import ru.practicum.shareit.exceptions.BookingNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,24 +24,20 @@ import static ru.practicum.shareit.booking.Status.WAITING;
 @Slf4j
 public class BookingService {
     private final BookingStorage bookingStorage;
-    private final UserService userService;
-
-    private final ItemService itemService;
-
     private final BookingMapper bookingMapper;
+    private final OrchestratorService orchestratorService;
 
     @Autowired
     @Lazy
-    public BookingService(BookingStorage bookingStorage, UserService userService, ItemService itemService,
-                          BookingMapper bookingMapper) {
+    public BookingService(BookingStorage bookingStorage,
+                          BookingMapper bookingMapper, OrchestratorService orchestratorService) {
         this.bookingStorage = bookingStorage;
-        this.userService = userService;
-        this.itemService = itemService;
         this.bookingMapper = bookingMapper;
+        this.orchestratorService = orchestratorService;
     }
 
     public BookingDto createBooking(BookingForItem bookingForItemDto, Long bookerId) {
-        if (userService.getUserById(bookerId) == null) {
+        if (!orchestratorService.isExistUser(bookerId)) {
             throw new UserNotFoundException("Пользователь с ID=" + bookerId + " не найден!");
         }
         if (bookingForItemDto.getStart().isAfter(bookingForItemDto.getEnd()) ||
@@ -50,7 +45,7 @@ public class BookingService {
             throw new ValidationException("Дата начала позже или равна окончанию бронирования");
         }
 
-        if (!itemService.findItemById(bookingForItemDto.getItemId()).getAvailable()) {
+        if (!orchestratorService.isAvailableItem(bookingForItemDto.getItemId())) {
             throw new ValidationException("Вещь недоступна для бронирования");
         }
         Booking booking = bookingMapper.toBooking(bookingForItemDto, bookerId);
@@ -62,7 +57,7 @@ public class BookingService {
     }
 
     public BookingDto update(Long bookingId, Long userId, Boolean approved) {
-        if (userService.getUserById(userId) == null) {
+        if (!orchestratorService.isExistUser(userId)) {
             throw new UserNotFoundException("Пользователь с ID=" + userId + " не найден!");
         }
         Booking booking = bookingStorage.findById(bookingId)
@@ -71,14 +66,9 @@ public class BookingService {
             throw new ValidationException("Время бронирования истекло!");
         }
 
-        if (booking.getBooker().getId().equals(userId)) {
-            if (!approved) {
-                booking.setStatus(Status.CANCELED);
-                log.info("Пользователь с ID={} отменил бронирование с ID={}", userId, bookingId);
-            } else {
-                throw new UserNotFoundException("Подтвердить бронирование может только владелец вещи!");
-            }
-        } else if ((isItemOwner(booking.getItem().getId(), userId)) &&
+        if (booking.getBooker().getId().equals(userId) && approved) {
+            throw new UserNotFoundException("Подтвердить бронирование может только владелец вещи!");
+        } else if ((orchestratorService.isItemOwner(booking.getItem().getId(), userId)) &&
                 (!booking.getStatus().equals(Status.CANCELED))) {
             if (!booking.getStatus().equals(WAITING)) {
                 throw new ValidationException("Решение по бронированию уже принято!");
@@ -93,8 +83,6 @@ public class BookingService {
         } else {
             if (booking.getStatus().equals(Status.CANCELED)) {
                 throw new ValidationException("Бронирование было отменено!");
-            } else {
-                throw new ValidationException("Подтвердить бронирование может только владелец вещи!");
             }
         }
 
@@ -102,24 +90,23 @@ public class BookingService {
     }
 
     public BookingDto getBookingById(Long bookingId, Long userId) {
-        if (userService.getUserById(userId) == null) {
+        if (!orchestratorService.isExistUser(userId)) {
             throw new UserNotFoundException("Пользователь с ID=" + userId + " не найден!");
         }
         Booking booking = bookingStorage.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException("Бронирование с ID=" + bookingId + " не найдено!"));
-        if (booking.getBooker().getId().equals(userId) || isItemOwner(booking.getItem().getId(), userId)) {
-            return bookingMapper.toBookingDto(booking);
-        } else {
+        if (!booking.getBooker().getId().equals(userId) && !orchestratorService.isItemOwner(booking.getItem().getId(), userId)) {
             throw new UserNotFoundException("Посмотреть данные бронирования может только владелец вещи" +
                     " или бронирующий ее!");
         }
+        return bookingMapper.toBookingDto(booking);
     }
 
     public List<BookingDto> getBookings(String state, Long userId) {
-        if (userService.getUserById(userId) == null) {
+        if (!orchestratorService.isExistUser(userId)) {
             throw new UserNotFoundException("Пользователь с ID=" + userId + " не найден!");
         }
-        User booker = userService.findUserById(userId);
+        User booker = orchestratorService.findUserById(userId);
         Sort sort = Sort.by(Sort.Direction.DESC, "start");
         List<Booking> bookings;
         switch (state) {
@@ -157,7 +144,7 @@ public class BookingService {
 
 
     public List<BookingDto> getBookingsOwner(String state, Long userId) {
-        if (userService.getUserById(userId) == null) {
+        if (!orchestratorService.isExistUser(userId)) {
             throw new UserNotFoundException("Пользователь с ID=" + userId + " не найден!");
         }
         List<Booking> bookings;
@@ -194,11 +181,5 @@ public class BookingService {
     public Booking getBookingWithUserBookedItem(Long itemId, Long userId) {
         return bookingStorage.findFirstByItem_IdAndBooker_IdAndEndIsBeforeAndStatus(itemId,
                 userId, LocalDateTime.now(), Status.APPROVED);
-    }
-
-    private boolean isItemOwner(Long itemId, Long userId) {
-
-        return itemService.findAllItems(userId).stream()
-                .anyMatch(i -> i.getId().equals(itemId));
     }
 }

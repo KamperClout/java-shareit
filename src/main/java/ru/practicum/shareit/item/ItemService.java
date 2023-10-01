@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.OrchestratorService;
 import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
@@ -14,7 +15,6 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserService;
 
 
 import java.time.LocalDateTime;
@@ -29,11 +29,8 @@ import static java.util.stream.Collectors.toList;
 @Service
 public class ItemService {
     private final ItemStorage itemStorage;
-    private final UserService userService;
 
     private final CommentStorage commentStorage;
-
-    private final BookingService bookingService;
 
     private final BookingStorage bookingStorage;
 
@@ -41,23 +38,24 @@ public class ItemService {
 
     private final BookingMapper bookingMapper;
 
+    private final OrchestratorService orchestratorService;
+
     @Autowired
     @Lazy
-    public ItemService(ItemStorage itemStorage, UserService userService, CommentStorage commentStorage,
-                       BookingService bookingService, BookingStorage bookingStorage, ItemMapper itemMapper,
-                       BookingMapper bookingMapper) {
+    public ItemService(ItemStorage itemStorage, CommentStorage commentStorage
+            , BookingStorage bookingStorage, ItemMapper itemMapper,
+                       BookingMapper bookingMapper, OrchestratorService orchestratorService) {
         this.itemStorage = itemStorage;
-        this.userService = userService;
         this.commentStorage = commentStorage;
-        this.bookingService = bookingService;
         this.bookingStorage = bookingStorage;
         this.itemMapper = itemMapper;
         this.bookingMapper = bookingMapper;
+        this.orchestratorService = orchestratorService;
     }
 
     public ItemDto create(ItemDto itemDto, Long ownerId) {
-        if (userService.getUserById(ownerId) == null) {
-            throw new UserNotFoundException("Пользователь с id=" + ownerId + " не найден");
+        if (!orchestratorService.isExistUser(ownerId)) {
+            throw new UserNotFoundException("Пользователь с ID=" + ownerId + " не найден!");
         }
         return itemMapper.toItemDto(itemStorage.save(itemMapper.toItem(itemDto, ownerId)));
     }
@@ -106,8 +104,8 @@ public class ItemService {
 
     @Transactional
     public ItemDto update(ItemDto itemDto, Long ownerId, Long itemId) {
-        if (userService.getUserById(ownerId) == null) {
-            throw new UserNotFoundException("Пользователь с id=" + ownerId + " не найден!");
+        if (!orchestratorService.isExistUser(ownerId)) {
+            throw new UserNotFoundException("Пользователь с ID=" + ownerId + " не найден!");
         }
         Item item = itemStorage.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Вещь с ID=" + itemId + " не найдена!"));
@@ -138,8 +136,7 @@ public class ItemService {
     public List<ItemDto> getItemsBySearchQuery(String text) {
         List<ItemDto> searchItems = new ArrayList<>();
         if (!text.isBlank()) {
-            text = text.toLowerCase();
-            searchItems = itemStorage.getItemsBySearchQuery(text)
+            searchItems = itemStorage.getItemsBySearchQuery(text.toLowerCase())
                     .stream()
                     .map(itemMapper::toItemDto)
                     .collect(Collectors.toList());
@@ -149,19 +146,18 @@ public class ItemService {
 
     @Transactional
     public CommentDto createComment(CommentDto commentDto, Long itemId, Long userId) {
-        if (userService.getUserById(userId) == null) {
-            throw new UserNotFoundException("Пользователь с id " + userId + " не найден!");
+        if (!orchestratorService.isExistUser(userId)) {
+            throw new UserNotFoundException("Пользователь с ID=" + userId + " не найден!");
         }
         Comment comment = new Comment();
-        Booking booking = bookingService.getBookingWithUserBookedItem(itemId, userId);
-        if (booking != null) {
-            comment.setCreated(LocalDateTime.now());
-            comment.setItem(booking.getItem());
-            comment.setAuthor(booking.getBooker());
-            comment.setText(commentDto.getText());
-        } else {
+        Booking booking = orchestratorService.getBookingWithUserBookedItem(itemId, userId);
+        if (booking == null) {
             throw new ValidationException("Данный пользователь вещь не бронировал!");
         }
+        comment.setCreated(LocalDateTime.now());
+        comment.setItem(booking.getItem());
+        comment.setAuthor(booking.getBooker());
+        comment.setText(commentDto.getText());
         return itemMapper.toCommentDto(commentStorage.save(comment));
     }
 
@@ -176,10 +172,10 @@ public class ItemService {
         itemDto.setLastBooking(bookings.stream()
                 .filter(booking -> booking.getItem().getId().equals(itemDto.getId()) &&
                         booking.getStartTime().isBefore(LocalDateTime.now()))
-                .reduce((a, b) -> b).orElse(null));
+                .reduce((bookRes, bookPrev) -> bookPrev).orElse(null));
         itemDto.setNextBooking(bookings.stream()
                 .filter(booking -> booking.getItem().getId().equals(itemDto.getId()) &&
                         booking.getStartTime().isAfter(LocalDateTime.now()))
-                .reduce((a, b) -> a).orElse(null));
+                .reduce((bookNext, bookRes) -> bookNext).orElse(null));
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingForItem;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.exceptions.BookingNotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.user.UserMapper;
@@ -28,32 +29,30 @@ public class BookingMapper {
     }
 
     public BookingDto toBookingDto(Booking booking) {
-        if (booking != null) {
-            return new BookingDto(
-                    booking.getId(),
-                    booking.getStart(),
-                    booking.getEnd(),
-                    itemMapper.toItemDto(booking.getItem()),
-                    UserMapper.toUserDto(booking.getBooker()),
-                    booking.getStatus()
-            );
-        } else {
-            return null;
+        if (booking == null) {
+            throw new BookingNotFoundException("Бронирование не найдено!");
         }
+        return new BookingDto(
+                booking.getId(),
+                booking.getStart(),
+                booking.getEnd(),
+                itemMapper.toItemDto(booking.getItem()),
+                UserMapper.toUserDto(booking.getBooker()),
+                booking.getStatus()
+        );
     }
 
     public BookingShortDto toBookingShortDto(Booking booking) {
-        if (booking != null) {
-            return new BookingShortDto(
-                    booking.getId(),
-                    booking.getItem(),
-                    booking.getBooker().getId(),
-                    booking.getStart(),
-                    booking.getEnd()
-            );
-        } else {
-            return null;
+        if (booking == null) {
+            throw new BookingNotFoundException("Бронирование не найдено!");
         }
+        return new BookingShortDto(
+                booking.getId(),
+                booking.getItem(),
+                booking.getBooker().getId(),
+                booking.getStart(),
+                booking.getEnd()
+        );
     }
 
     public Booking toBooking(BookingForItem bookingForItemDto, Long bookerId) {

@@ -52,16 +52,8 @@ public class UserService {
         if (userDto.getName() != null) {
             user.setName(userDto.getName());
         }
-        if ((userDto.getEmail() != null) && (!userDto.getEmail().equals(user.getEmail()))) {
-            if (userStorage.findAll()
-                    .stream()
-                    .filter(u -> u.getEmail().equals(userDto.getEmail()))
-                    .allMatch(u -> u.getId().equals(userDto.getId()))) {
-                user.setEmail(userDto.getEmail());
-            } else {
-                throw new UserAlreadyExistsException("Пользователь с E-mail=" + user.getEmail() + " уже существует!");
-            }
-
+        if (userDto.getEmail() != null) {
+            user.setEmail(userDto.getEmail());
         }
         return UserMapper.toUserDto(userStorage.save(user));
     }
