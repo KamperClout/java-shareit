@@ -31,4 +31,10 @@ public class ErrorHandler {
     public ErrorResponse handleUserAlreadyExistException(final UserAlreadyExistsException e) {
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleBookingNotFoundException(final BookingNotFoundException e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }

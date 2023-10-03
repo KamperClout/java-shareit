@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/users")
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
@@ -42,8 +42,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public UserDto delete(@PathVariable Long userId) {
+    public void delete(@PathVariable Long userId) {
         log.info("Получен DELETE-запрос: '/users' на удаление пользователя с ID={}", userId);
-        return userService.delete(userId);
+        userService.delete(userId);
     }
 }

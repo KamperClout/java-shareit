@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
@@ -13,7 +14,7 @@ import java.util.List;
 @Slf4j
 public class ItemController {
     private static final String OWNER = "X-Sharer-User-Id";
-    private ItemService itemService;
+    private final ItemService itemService;
 
 
     @Autowired
@@ -22,9 +23,9 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable Long itemId) {
+    public ItemDto getItemById(@PathVariable Long itemId, @RequestHeader(OWNER) Long ownerId) {
         log.info("Получен GET-запрос: '/items' на получение вещи с ID={}", itemId);
-        return itemService.getItemById(itemId);
+        return itemService.getItemById(itemId, ownerId);
     }
 
     @PostMapping
@@ -47,14 +48,22 @@ public class ItemController {
     }
 
     @DeleteMapping("/{itemId}")
-    public ItemDto delete(@PathVariable Long itemId, @RequestHeader(OWNER) Long ownerId) {
+    public void delete(@PathVariable Long itemId, @RequestHeader(OWNER) Long ownerId) {
         log.info("Получен DELETE-запрос: '/items' на удаление вещи с ID={}", itemId);
-        return itemService.delete(itemId, ownerId);
+        itemService.delete(itemId, ownerId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> itemsSearch(@RequestParam String text) {
         log.info("Получен GET-запрос: '/items/search' на поиск вещи с текстом={}", text);
         return itemService.getItemsBySearchQuery(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createComment(@Valid @RequestBody CommentDto commentDto, @RequestHeader(OWNER) Long userId,
+                                    @PathVariable Long itemId) {
+        log.info("Получен POST-запрос: '/items/comment' на" +
+                " добавление отзыва пользователем с ID={}", userId);
+        return itemService.createComment(commentDto, itemId, userId);
     }
 }
