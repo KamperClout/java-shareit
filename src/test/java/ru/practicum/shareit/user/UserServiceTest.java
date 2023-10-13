@@ -14,8 +14,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -29,6 +28,12 @@ class UserServiceTest {
         UserDto returnUserDto = userService.create(UserMapper.toUserDto(user));
         assertThat(returnUserDto.getName(), equalTo(user.getName()));
         assertThat(returnUserDto.getEmail(), equalTo(user.getEmail()));
+    }
+
+    @Test
+    void shouldReturnExceptionWhenGetUserById() {
+        UserNotFoundException exp = assertThrows(UserNotFoundException.class, () -> userService.findUserById(10L));
+        assertEquals("Пользователь с ID=10 не найден!", exp.getMessage());
     }
 
     @Test
@@ -57,6 +62,8 @@ class UserServiceTest {
         UserDto updateUserDto = userService.getUserById(returnUserDto.getId());
         assertThat(updateUserDto.getName(), equalTo("NewName"));
         assertThat(updateUserDto.getEmail(), equalTo("new@email.ru"));
+        assertNotNull(returnUserDto.getEmail());
+        assertNotNull(returnUserDto.getName());
     }
 
     @Test
@@ -70,4 +77,5 @@ class UserServiceTest {
         Assertions.assertEquals("Пользователь с E-mail=" + newUser.getEmail() + " уже существует!",
                 exception.getMessage());
     }
+
 }
