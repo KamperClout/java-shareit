@@ -8,12 +8,12 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.List;
 
 @DataJpaTest
-public class UserStorageTest {
+class UserStorageTest {
     @Autowired
-    private UserStorage storage;
+    UserStorage storage;
 
     @Test
-    public void findAllWithEmptyRepository_shouldReturnEmpty() {
+    void findAllWithEmptyRepository_shouldReturnEmpty() {
         List<User> users = storage.findAll();
 
         Assertions.assertEquals(0, users.size());

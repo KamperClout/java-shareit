@@ -7,7 +7,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.OrchestratorService;
-import ru.practicum.shareit.booking.*;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.BookingStorage;
+import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
@@ -20,9 +23,11 @@ import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestMapper;
 import ru.practicum.shareit.request.ItemRequestStorage;
 
-
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -63,11 +68,11 @@ public class ItemService {
     }
 
     public ItemDto create(ItemDto itemDto, Long ownerId) {
-        Optional<Long> requestId = Optional.ofNullable(itemDto.getRequestId());
+        Long requestId = itemDto.getRequestId();
         ItemRequest request = null;
 
-        if (requestId.isPresent() && requestId.get() > 0L) {
-            request = itemRequestStorage.findById(requestId.get())
+        if (requestId != null && requestId > 0L) {
+            request = itemRequestStorage.findById(requestId)
                     .orElseThrow(() -> new NoSuchElementException("запрос c id " + requestId + " не существует"));
         }
         if (!orchestratorService.isExistUser(ownerId)) {

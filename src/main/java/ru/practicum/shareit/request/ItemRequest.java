@@ -18,7 +18,7 @@ public class ItemRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String description;
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "requester_id", referencedColumnName = "id")
     private User requester;
     private LocalDateTime created;

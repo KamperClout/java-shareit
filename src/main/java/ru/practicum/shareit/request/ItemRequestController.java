@@ -32,8 +32,8 @@ public class ItemRequestController {
 
     @GetMapping
     public List<ItemRequestDto> getItemRequestsOwnerSorted(@RequestHeader(OWNER) Long userId,
-                                                           @RequestParam(required = false, defaultValue = "0") int from,
-                                                           @RequestParam(required = false, defaultValue = "20") int size) {
+                                                           @RequestParam(defaultValue = "0") int from,
+                                                           @RequestParam(defaultValue = "20") int size) {
         log.info("поступил запрос пользователя {} на получение  списка своих запросов вместе с данными об ответах на них", userId);
         if (from < 0 || size <= 0) {
             throw new BadRequestException("параметры пагинации не могут быть отрицательными или равны нулю");
@@ -43,8 +43,8 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestDto> getItemRequestsOtherSorted(@RequestHeader(OWNER) Long userId,
-                                                           @RequestParam(required = false, defaultValue = "0") int from,
-                                                           @RequestParam(required = false, defaultValue = "20") int size) {
+                                                           @RequestParam(defaultValue = "0") int from,
+                                                           @RequestParam(defaultValue = "20") int size) {
         log.info("поступил запрос от пользователя {} на получение списка запросов, созданных другими пользователями", userId);
         if (from < 0 || size <= 0) {
             throw new BadRequestException("параметры пагинации не могут быть отрицательными или равны нулю");

@@ -30,9 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @WebMvcTest(controllers = ItemController.class)
-public class ItemControllerTest {
+class ItemControllerTest {
     @Autowired
-    private ItemController itemController;
+    ItemController itemController;
 
     @Autowired
     ObjectMapper mapper;
@@ -41,19 +41,19 @@ public class ItemControllerTest {
     ItemService itemService;
 
     @Autowired
-    private MockMvc mvc;
+    MockMvc mvc;
 
-    private static final String USER_ID = "X-Sharer-User-Id";
+    static final String USER_ID = "X-Sharer-User-Id";
 
-    private User user = new User(1L, "First", "first@first.ru");
+    User user = new User(1L, "First", "first@first.ru");
 
-    private Item item = new Item(1L, "Item1", "Description1", true, user, null);
-    private ItemDto itemDto = new ItemDto(1L, "Item1", "Description1", true,
+    Item item = new Item(1L, "Item1", "Description1", true, user, null);
+    ItemDto itemDto = new ItemDto(1L, "Item1", "Description1", true,
             user, null, null, null, null);
-    private CommentDto commentDto = new CommentDto(1L, "Text comment", item,
+    CommentDto commentDto = new CommentDto(1L, "Text comment", item,
             user.getName(), LocalDateTime.of(2022, 3, 5, 1, 2, 3));
 
-    private List listItemDto = new ArrayList<>();
+    List listItemDto = new ArrayList<>();
 
     @Test
     void createItem() throws Exception {

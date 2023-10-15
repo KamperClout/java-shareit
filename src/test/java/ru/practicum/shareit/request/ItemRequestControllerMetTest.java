@@ -28,22 +28,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ItemRequestControllerMetTest {
     @Autowired
-    private ItemRequestController requestController;
+    ItemRequestController requestController;
     @Autowired
-    private UserController userController;
+    UserController userController;
     @Autowired
-    private ItemRequestMapper mapper;
+    ItemRequestMapper mapper;
     @Autowired
-    private UserStorage userStorage;
+    UserStorage userStorage;
     @Autowired
-    private ItemRequestStorage itemRequestStorage;
+    ItemRequestStorage itemRequestStorage;
     @Autowired
-    private CommentStorage commentStorage;
-    private ItemRequestDto itemRequestDto;
-    private UserDto userDto;
+    CommentStorage commentStorage;
+    ItemRequestDto itemRequestDto;
+    UserDto userDto;
 
     @BeforeEach
-    public void clearContext() {
+    void clearContext() {
         commentStorage.deleteAll();
         itemRequestStorage.deleteAll();
         userStorage.deleteAll();

@@ -22,17 +22,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @Transactional
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class ItemRequestServiceTest {
+class ItemRequestServiceTest {
 
-    private final ItemRequestService itemRequestService;
+    ItemRequestService itemRequestService;
 
-    private final UserService userService;
+    UserService userService;
 
-    private final OrchestratorService orchestratorService;
-    private UserDto userDto1 = new UserDto(101L, "One", "one@one.ru");
-    private UserDto userDto2 = new UserDto(102L, "Two", "two@two.ru");
+    OrchestratorService orchestratorService;
+    UserDto userDto1 = new UserDto(101L, "One", "one@one.ru");
+    UserDto userDto2 = new UserDto(102L, "Two", "two@two.ru");
 
-    private ItemRequestDto itemRequestDto = new ItemRequestDto(100L, "ItemRequest description",
+    ItemRequestDto itemRequestDto = new ItemRequestDto(100L, "ItemRequest description",
             userDto1, LocalDateTime.of(2022, 1, 2, 3, 4, 5), null);
 
     @Test

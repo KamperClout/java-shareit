@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @Transactional
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class OrchestratorServiceTest {
+class OrchestratorServiceTest {
     private final OrchestratorService orchestratorService;
 
     private final UserService userService;

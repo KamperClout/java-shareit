@@ -20,17 +20,17 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
-public class ItemRequestServiceImplTest {
+class ItemRequestServiceImplTest {
     @Mock
-    private ItemRequestStorage itemRequestStorage;
+    ItemRequestStorage itemRequestStorage;
     @Mock
-    private OrchestratorService orchestratorService;
-    private ItemRequestService itemRequestService;
-    private ItemRequestMapper itemRequestMapper;
+    OrchestratorService orchestratorService;
+    ItemRequestService itemRequestService;
+    ItemRequestMapper itemRequestMapper;
 
-    private UserDto userDto = new UserDto(1L, "Alex", "alex@alex.ru");
+    UserDto userDto = new UserDto(1L, "Alex", "alex@alex.ru");
 
-    private ItemRequestDto itemRequestDto = new ItemRequestDto(1L, "ItemRequest description",
+    ItemRequestDto itemRequestDto = new ItemRequestDto(1L, "ItemRequest description",
             userDto, LocalDateTime.of(2022, 1, 2, 3, 4, 5), null);
 
     @BeforeEach

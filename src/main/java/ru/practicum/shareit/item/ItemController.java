@@ -37,8 +37,8 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> findAllItems(@RequestHeader(OWNER) Long ownerId, @RequestParam(required = false, defaultValue = "0") int from,
-                                      @RequestParam(required = false, defaultValue = "20") int size) {
+    public List<ItemDto> findAllItems(@RequestHeader(OWNER) Long ownerId, @RequestParam(defaultValue = "0") int from,
+                                      @RequestParam(defaultValue = "20") int size) {
         log.info("Получен GET-запрос: '/items' на получение всех вещей владельца с ID={}", ownerId);
         if (from < 0 || size <= 0) {
             throw new BadRequestException("параметры пагинации не могут быть отрицательными или равны нулю");
@@ -60,8 +60,8 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> itemsSearch(@RequestParam String text, @RequestParam(required = false, defaultValue = "0") int from,
-                                     @RequestParam(required = false, defaultValue = "20") int size) {
+    public List<ItemDto> itemsSearch(@RequestParam String text, @RequestParam(defaultValue = "0") int from,
+                                     @RequestParam(defaultValue = "20") int size) {
         log.info("Получен GET-запрос: '/items/search' на поиск вещи с текстом={}", text);
         if (from < 0 || size <= 0) {
             throw new BadRequestException("параметры пагинации не могут быть отрицательными или равны нулю");

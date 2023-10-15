@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserServiceTest {
-    private final UserService userService;
-    private User user = new User(1L, "User", "first@first.ru");
+    UserService userService;
+    User user = new User(1L, "User", "first@first.ru");
 
     @Test
     void shouldReturnUserWhenGetUserById() {

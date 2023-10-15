@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @WebMvcTest(controllers = BookingController.class)
-public class BookingControllerTest {
+class BookingControllerTest {
 
     @Autowired
     ObjectMapper mapper;
@@ -37,9 +37,9 @@ public class BookingControllerTest {
     BookingService bookingService;
 
     @Autowired
-    private MockMvc mvc;
+    MockMvc mvc;
 
-    private static final String USER_ID = "X-Sharer-User-Id";
+    static final String USER_ID = "X-Sharer-User-Id";
 
     private BookingForItem bookingForItem = new BookingForItem(
             1L,

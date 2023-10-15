@@ -19,12 +19,12 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
-public class BookingDtoTest {
-    private JacksonTester<BookingDto> json;
-    private BookingDto bookingDto;
-    private Validator validator;
+class BookingDtoTest {
+    JacksonTester<BookingDto> json;
+    BookingDto bookingDto;
+    Validator validator;
 
-    public BookingDtoTest(@Autowired JacksonTester<BookingDto> json) {
+    BookingDtoTest(@Autowired JacksonTester<BookingDto> json) {
         this.json = json;
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();

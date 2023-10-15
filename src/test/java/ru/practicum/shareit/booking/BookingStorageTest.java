@@ -20,21 +20,21 @@ import static org.hamcrest.Matchers.equalTo;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class BookingStorageTest {
     @Autowired
-    private BookingStorage bookingStorage;
+    BookingStorage bookingStorage;
 
     @Autowired
-    private UserStorage userStorage;
+    UserStorage userStorage;
 
     @Autowired
-    private ItemStorage itemStorage;
+    ItemStorage itemStorage;
 
-    private User user;
+    User user;
 
-    private Item item;
+    Item item;
 
-    private User user2;
+    User user2;
 
-    private Booking booking;
+    Booking booking;
 
     @BeforeEach
     void beforeEach() {
@@ -61,8 +61,8 @@ class BookingStorageTest {
 
 
         assertThat(bookingStorage.findByItem_Owner_IdAndStartIsBeforeAndEndIsAfter(userSaved.getId(),
-                        LocalDateTime.now(),LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC,"start")).size(),
+                        LocalDateTime.now(), LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "start")).size(),
                 equalTo(1));
     }
 
@@ -74,8 +74,8 @@ class BookingStorageTest {
         bookingStorage.save(booking);
 
         assertThat(bookingStorage.findAllByBookerIdAndStartBeforeAndEndAfter(userSaved2.getId(),
-                        LocalDateTime.now(),LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC,"start")).size(),
+                        LocalDateTime.now(), LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "start")).size(),
                 equalTo(1));
     }
 
@@ -87,7 +87,7 @@ class BookingStorageTest {
         bookingStorage.save(booking);
 
         assertThat(bookingStorage.findByItem_Owner_IdAndEndIsBefore(userSaved.getId(),
-                        LocalDateTime.now(),Sort.by(Sort.Direction.DESC,"start")).size(),
+                        LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")).size(),
                 equalTo(0));
     }
 
@@ -101,7 +101,7 @@ class BookingStorageTest {
         bookingStorage.save(booking);
 
         assertThat(bookingStorage.findByItem_Owner_IdAndStartIsAfter(userSaved.getId(),
-                        LocalDateTime.now(), Sort.by(Sort.Direction.DESC,"start")).size(),
+                        LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")).size(),
                 equalTo(1));
     }
 

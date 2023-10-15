@@ -23,11 +23,11 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
-public class UserServiceImplTest {
+class UserServiceImplTest {
     @Mock
-    private UserStorage userStorage;
-    private UserService userService;
-    private UserDto userDto = new UserDto(1L, "Pavel", "kamperinc@yandex.ru");
+    UserStorage userStorage;
+    UserService userService;
+    UserDto userDto = new UserDto(1L, "Pavel", "kamperinc@yandex.ru");
 
     @BeforeEach
     void beforeEach() {

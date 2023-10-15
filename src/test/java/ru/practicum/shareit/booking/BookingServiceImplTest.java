@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @Transactional
 @ExtendWith(MockitoExtension.class)
-public class BookingServiceImplTest {
+class BookingServiceImplTest {
     @Mock
     BookingStorage bookingStorage;
     @Mock

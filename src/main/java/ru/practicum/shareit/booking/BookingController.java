@@ -48,8 +48,8 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getBookings(@RequestParam(name = "state", defaultValue = "ALL") String state,
-                                        @RequestHeader(USER_ID) Long userId, @RequestParam(required = false, defaultValue = "0") int from,
-                                        @RequestParam(required = false, defaultValue = "20") int size) {
+                                        @RequestHeader(USER_ID) Long userId, @RequestParam(defaultValue = "0") int from,
+                                        @RequestParam(defaultValue = "20") int size) {
         log.info("Получен GET-запрос: '/bookings' на получение " +
                 "списка всех бронирований пользователя с ID={} с параметром STATE={}", userId, state);
         if (from < 0 || size <= 0) {
@@ -60,8 +60,8 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingDto> getBookingsOwner(@RequestParam(name = "state", defaultValue = "ALL") String state,
-                                             @RequestHeader(USER_ID) Long userId, @RequestParam(required = false, defaultValue = "0") int from,
-                                             @RequestParam(required = false, defaultValue = "20") int size) {
+                                             @RequestHeader(USER_ID) Long userId, @RequestParam(defaultValue = "0") int from,
+                                             @RequestParam(defaultValue = "20") int size) {
         log.info("Получен GET-запрос: '/bookings/owner' на получение " +
                 "списка всех бронирований вещей пользователя с ID={} с параметром STATE={}", userId, state);
         if (from < 0 || size <= 0) {

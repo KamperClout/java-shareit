@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @WebMvcTest(controllers = UserController.class)
-public class UserControllerTest {
+class UserControllerTest {
 
     @Autowired
     ObjectMapper mapper;
@@ -29,10 +29,10 @@ public class UserControllerTest {
     UserService userService;
 
     @Autowired
-    private MockMvc mvc;
+    MockMvc mvc;
 
-    private UserDto userDto = new UserDto(1L, "Pavel", "kamperinc@yandex.ru");
-    private List<UserDto> listUserDto = List.of(
+    UserDto userDto = new UserDto(1L, "Pavel", "kamperinc@yandex.ru");
+    List<UserDto> listUserDto = List.of(
             new UserDto(1L, "First", "first@first.ru"),
             new UserDto(2L, "Second", "second@second.ru"));
 

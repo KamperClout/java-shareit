@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ItemRequestController.class)
-public class ItemRequestControllerTest {
+ class ItemRequestControllerTest {
 
     @Autowired
     ObjectMapper mapper;
@@ -34,9 +34,9 @@ public class ItemRequestControllerTest {
     ItemRequestService itemRequestService;
 
     @Autowired
-    private MockMvc mvc;
+     MockMvc mvc;
 
-    private static final String USER_ID = "X-Sharer-User-Id";
+    static final String USER_ID = "X-Sharer-User-Id";
 
     private UserDto userDto = new UserDto(1L, "Pavel", "kamperinc@yandex.ru");
 

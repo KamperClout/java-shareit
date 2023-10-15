@@ -17,11 +17,11 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
-public class UserDtoTest {
+class UserDtoTest {
 
-    private JacksonTester<UserDto> json;
-    private UserDto userDto;
-    private Validator validator;
+    JacksonTester<UserDto> json;
+    UserDto userDto;
+    Validator validator;
 
     public UserDtoTest(@Autowired JacksonTester<UserDto> json) {
         this.json = json;

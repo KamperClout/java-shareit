@@ -36,19 +36,19 @@ import static org.mockito.Mockito.when;
 @Transactional
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @ExtendWith(MockitoExtension.class)
-public class ItemServiceTest {
+class ItemServiceTest {
     @Mock
-    private ItemStorage storage;
-    private final ItemService itemService;
-    private final UserService userService;
-    private final ItemMapper itemMapper;
-    private final BookingService bookingService;
-    private final User user = new User(200L, "First", "first@yandex.ru");
-    private final UserDto userDto1 = new UserDto(201L, "PavelOne", "pavelone@yandex.ru");
-    private final UserDto userDto2 = new UserDto(202L, "PavelTwo", "paveltwo@yandex.ru");
-    private final ItemDto itemDto = new ItemDto(200L, "Item1", "Description1", true,
+    ItemStorage storage;
+    ItemService itemService;
+    UserService userService;
+    ItemMapper itemMapper;
+    BookingService bookingService;
+    User user = new User(200L, "First", "first@yandex.ru");
+    UserDto userDto1 = new UserDto(201L, "PavelOne", "pavelone@yandex.ru");
+    UserDto userDto2 = new UserDto(202L, "PavelTwo", "paveltwo@yandex.ru");
+    ItemDto itemDto = new ItemDto(200L, "Item1", "Description1", true,
             user, null, null, null, null);
-    private final ItemDto itemDto2 = new ItemDto(202L, "Item2", "Description2", true,
+    ItemDto itemDto2 = new ItemDto(202L, "Item2", "Description2", true,
             user, null, null, null, null);
 
     @Test

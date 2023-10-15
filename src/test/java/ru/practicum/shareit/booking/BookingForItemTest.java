@@ -18,12 +18,12 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
-public class BookingForItemTest {
-    private JacksonTester<BookingForItem> json;
-    private BookingForItem bookingForItem;
-    private Validator validator;
+class BookingForItemTest {
+    JacksonTester<BookingForItem> json;
+    BookingForItem bookingForItem;
+    Validator validator;
 
-    public BookingForItemTest(@Autowired JacksonTester<BookingForItem> json) {
+    BookingForItemTest(@Autowired JacksonTester<BookingForItem> json) {
         this.json = json;
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
