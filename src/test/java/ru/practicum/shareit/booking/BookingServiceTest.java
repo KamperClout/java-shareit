@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Transactional
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class BookingServiceTest {
-    BookingService bookingService;
-    UserService userService;
-    ItemService itemService;
+    final BookingService bookingService;
+    final UserService userService;
+    final ItemService itemService;
     User user = new User(300L, "First", "first@first300.ru");
     UserDto userDto1 = new UserDto(301L, "PavelOne", "pavelone@yandex.ru");
     UserDto userDto2 = new UserDto(302L, "PavelTwo", "paveltwo@yandex.ru");
@@ -36,6 +36,7 @@ class BookingServiceTest {
             user, null, null, null, null);
     ItemDto itemDto2 = new ItemDto(302L, "Item2", "Description2", true,
             user, null, null, null, null);
+
 
     @Test
     void shouldExceptionWhenCreateBookingByOwnerItem() {

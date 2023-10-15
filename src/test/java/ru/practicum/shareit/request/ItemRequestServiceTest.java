@@ -24,11 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class ItemRequestServiceTest {
 
-    ItemRequestService itemRequestService;
+    final ItemRequestService itemRequestService;
 
-    UserService userService;
+    final UserService userService;
 
-    OrchestratorService orchestratorService;
+    final OrchestratorService orchestratorService;
     UserDto userDto1 = new UserDto(101L, "One", "one@one.ru");
     UserDto userDto2 = new UserDto(102L, "Two", "two@two.ru");
 

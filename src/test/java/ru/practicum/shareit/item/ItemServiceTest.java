@@ -39,10 +39,10 @@ import static org.mockito.Mockito.when;
 class ItemServiceTest {
     @Mock
     ItemStorage storage;
-    ItemService itemService;
-    UserService userService;
-    ItemMapper itemMapper;
-    BookingService bookingService;
+    final ItemService itemService;
+    final UserService userService;
+    final ItemMapper itemMapper;
+    final BookingService bookingService;
     User user = new User(200L, "First", "first@yandex.ru");
     UserDto userDto1 = new UserDto(201L, "PavelOne", "pavelone@yandex.ru");
     UserDto userDto2 = new UserDto(202L, "PavelTwo", "paveltwo@yandex.ru");
