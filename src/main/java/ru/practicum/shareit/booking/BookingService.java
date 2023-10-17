@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.OrchestratorService;
@@ -77,7 +78,7 @@ public class BookingService {
                 booking.setStatus(Status.APPROVED);
                 log.info("Пользователь с ID={} подтвердил бронирование с ID={}", userId, bookingId);
             } else {
-                booking.setStatus(REJECTED);
+                booking.setStatus(Status.REJECTED);
                 log.info("Пользователь с ID={} отклонил бронирование с ID={}", userId, bookingId);
             }
         } else {
@@ -102,7 +103,7 @@ public class BookingService {
         return bookingMapper.toBookingDto(booking);
     }
 
-    public List<BookingDto> getBookings(String state, Long userId) {
+    public List<BookingDto> getBookings(String state, Long userId, PageRequest pageReq) {
         if (!orchestratorService.isExistUser(userId)) {
             throw new UserNotFoundException("Пользователь с ID=" + userId + " не найден!");
         }
@@ -111,7 +112,7 @@ public class BookingService {
         List<Booking> bookings;
         switch (state) {
             case "ALL":
-                bookings = bookingStorage.findAllByBookerId(userId, sort);
+                bookings = bookingStorage.findAllByBookerId(userId, sort, pageReq);
                 break;
             case "WAITING":
                 bookings = bookingStorage.findAllByBookerIdAndStatus(booker.getId(),
@@ -143,7 +144,7 @@ public class BookingService {
     }
 
 
-    public List<BookingDto> getBookingsOwner(String state, Long userId) {
+    public List<BookingDto> getBookingsOwner(String state, Long userId, PageRequest pageReq) {
         if (!orchestratorService.isExistUser(userId)) {
             throw new UserNotFoundException("Пользователь с ID=" + userId + " не найден!");
         }
@@ -151,7 +152,7 @@ public class BookingService {
         Sort sortByStartDesc = Sort.by(Sort.Direction.DESC, "start");
         switch (state) {
             case "ALL":
-                bookings = bookingStorage.findByItem_Owner_Id(userId, sortByStartDesc);
+                bookings = bookingStorage.findByItem_Owner_Id(userId, sortByStartDesc, pageReq);
                 break;
             case "CURRENT":
                 bookings = bookingStorage.findByItem_Owner_IdAndStartIsBeforeAndEndIsAfter(userId, LocalDateTime.now(),

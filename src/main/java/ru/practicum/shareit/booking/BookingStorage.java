@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingStorage extends JpaRepository<Booking, Long> {
-    List<Booking> findAllByBookerId(Long bookerId, Sort sort);
+    List<Booking> findAllByBookerId(Long bookerId, Sort sort, PageRequest pageReq);
 
     List<Booking> findAllByBookerIdAndStartBeforeAndEndAfter(Long bookerId, LocalDateTime start,
                                                               LocalDateTime end, Sort sort);
@@ -19,7 +20,7 @@ public interface BookingStorage extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByBookerIdAndStatus(Long bookerId, Status status, Sort sort);
 
-    List<Booking> findByItem_Owner_Id(Long ownerId, Sort sort);
+    List<Booking> findByItem_Owner_Id(Long ownerId, Sort sort, PageRequest pageRequest);
 
     List<Booking> findByItem_Owner_IdAndStartIsBeforeAndEndIsAfter(Long ownerId, LocalDateTime start,
                                                                    LocalDateTime end, Sort sort);
@@ -36,5 +37,5 @@ public interface BookingStorage extends JpaRepository<Booking, Long> {
     List<Booking> findByItemIdAndStatus(long itemId, Status status, Sort sort);
 
     @Query(value = "select b from Booking b where b.item.owner.id = ?1")
-    List<Booking> findAllByOwnerId(long ownerId, Sort sort);
+    List<Booking> findAllByOwnerId(long ownerId, Sort sort, PageRequest pageRequest);
 }

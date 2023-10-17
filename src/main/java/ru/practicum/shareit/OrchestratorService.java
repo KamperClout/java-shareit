@@ -41,7 +41,7 @@ public class OrchestratorService {
 
     public boolean isItemOwner(Long itemId, Long userId) {
 
-        return itemService.findAllItems(userId).stream()
+        return itemService.findAllItems(userId,null).stream()
                 .anyMatch(i -> i.getId().equals(itemId));
     }
 

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import lombok.Generated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
 
 @Component
+@Generated
 public class BookingMapper {
 
     private final UserService userService;
@@ -65,13 +67,4 @@ public class BookingMapper {
                 Status.WAITING
         );
     }
-
-    public BookingForItem toBookingForItem(Booking booking) {
-        return new BookingForItem(
-                booking.getItem().getId(),
-                booking.getStart(),
-                booking.getEnd()
-        );
-    }
-
 }

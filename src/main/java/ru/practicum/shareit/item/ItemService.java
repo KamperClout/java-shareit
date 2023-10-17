@@ -2,11 +2,15 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.OrchestratorService;
-import ru.practicum.shareit.booking.*;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.BookingStorage;
+import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
@@ -15,12 +19,15 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestMapper;
+import ru.practicum.shareit.request.ItemRequestStorage;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -40,34 +47,51 @@ public class ItemService {
 
     private final OrchestratorService orchestratorService;
 
+    private final ItemRequestStorage itemRequestStorage;
+
+    private final ItemRequestMapper itemRequestMapper;
+
     @Autowired
     @Lazy
     public ItemService(ItemStorage itemStorage, CommentStorage commentStorage,
                        BookingStorage bookingStorage, ItemMapper itemMapper,
-                       BookingMapper bookingMapper, OrchestratorService orchestratorService) {
+                       BookingMapper bookingMapper, OrchestratorService orchestratorService,
+                       ItemRequestStorage itemRequestStorage, ItemRequestMapper itemRequestMapper) {
         this.itemStorage = itemStorage;
         this.commentStorage = commentStorage;
         this.bookingStorage = bookingStorage;
         this.itemMapper = itemMapper;
         this.bookingMapper = bookingMapper;
         this.orchestratorService = orchestratorService;
+        this.itemRequestStorage = itemRequestStorage;
+        this.itemRequestMapper = itemRequestMapper;
     }
 
     public ItemDto create(ItemDto itemDto, Long ownerId) {
+        Long requestId = itemDto.getRequestId();
+        ItemRequest request = null;
+
+        if (requestId != null && requestId > 0L) {
+            request = itemRequestStorage.findById(requestId)
+                    .orElseThrow(() -> new NoSuchElementException("запрос c id " + requestId + " не существует"));
+        }
         if (!orchestratorService.isExistUser(ownerId)) {
             throw new UserNotFoundException("Пользователь с ID=" + ownerId + " не найден!");
+        }
+        if (request != null) {
+            itemDto.setRequestId(request.getId());
         }
         return itemMapper.toItemDto(itemStorage.save(itemMapper.toItem(itemDto, ownerId)));
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> findAllItems(Long ownerId) {
+    public List<ItemDto> findAllItems(Long ownerId, PageRequest pageReq) {
         List<ItemDto> itemsDto = itemStorage.findByOwnerId(ownerId).stream()
                 .map(itemMapper::toItemOwnerDto)
                 .sorted(Comparator.comparing(ItemDto::getId))
                 .collect(Collectors.toList());
         List<Booking> bookings = bookingStorage.findAllByOwnerId(ownerId,
-                Sort.by(Sort.Direction.ASC, "start"));
+                Sort.by(Sort.Direction.ASC, "start"), pageReq);
         List<BookingShortDto> bookingDtoShorts = bookings.stream()
                 .map(bookingMapper::toBookingShortDto)
                 .collect(Collectors.toList());
@@ -133,10 +157,10 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> getItemsBySearchQuery(String text) {
+    public List<ItemDto> getItemsBySearchQuery(String text, PageRequest pageReq) {
         List<ItemDto> searchItems = new ArrayList<>();
         if (!text.isBlank()) {
-            searchItems = itemStorage.getItemsBySearchQuery(text.toLowerCase())
+            searchItems = itemStorage.getItemsBySearchQuery(text.toLowerCase(), pageReq)
                     .stream()
                     .map(itemMapper::toItemDto)
                     .collect(Collectors.toList());
@@ -177,5 +201,12 @@ public class ItemService {
                 .filter(booking -> booking.getItem().getId().equals(itemDto.getId()) &&
                         booking.getStartTime().isAfter(LocalDateTime.now()))
                 .reduce((bookNext, bookRes) -> bookNext).orElse(null));
+    }
+
+    public List<ItemDto> getItemsByRequestId(Long requestId) {
+        return itemStorage.findAllByRequestId(requestId,
+                        Sort.by(Sort.Direction.DESC, "id")).stream()
+                .map(itemMapper::toItemDto)
+                .collect(toList());
     }
 }

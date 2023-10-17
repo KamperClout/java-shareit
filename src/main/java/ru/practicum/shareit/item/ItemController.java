@@ -2,7 +2,9 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
@@ -35,9 +37,13 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> findAllItems(@RequestHeader(OWNER) Long ownerId) {
+    public List<ItemDto> findAllItems(@RequestHeader(OWNER) Long ownerId, @RequestParam(defaultValue = "0") int from,
+                                      @RequestParam(defaultValue = "20") int size) {
         log.info("Получен GET-запрос: '/items' на получение всех вещей владельца с ID={}", ownerId);
-        return itemService.findAllItems(ownerId);
+        if (from < 0 || size <= 0) {
+            throw new BadRequestException("параметры пагинации не могут быть отрицательными или равны нулю");
+        }
+        return itemService.findAllItems(ownerId, PageRequest.of(from / size, size));
     }
 
     @PatchMapping("/{itemId}")
@@ -54,9 +60,13 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> itemsSearch(@RequestParam String text) {
+    public List<ItemDto> itemsSearch(@RequestParam String text, @RequestParam(defaultValue = "0") int from,
+                                     @RequestParam(defaultValue = "20") int size) {
         log.info("Получен GET-запрос: '/items/search' на поиск вещи с текстом={}", text);
-        return itemService.getItemsBySearchQuery(text);
+        if (from < 0 || size <= 0) {
+            throw new BadRequestException("параметры пагинации не могут быть отрицательными или равны нулю");
+        }
+        return itemService.getItemsBySearchQuery(text, PageRequest.of(from / size, size));
     }
 
     @PostMapping("/{itemId}/comment")
