@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import javax.validation.Valid;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Min;
 
 @Controller
 @RequestMapping(path = "/requests")
@@ -48,9 +48,9 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public ResponseEntity<Object> getAllItemRequests(@RequestHeader(OWNER) Long userId,
-                                                     @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                                     @Min(0) @RequestParam(defaultValue = "0")
                                                      Integer from,
-                                                     @RequestParam(required = false) Integer size) {
+                                                     @RequestParam(defaultValue = "20") Integer size) {
         log.info("Получен GET-запрос к эндпоинту: '/requests/all' от пользователя с ID={} на получение всех запросов",
                 userId);
         return itemRequestClient.getOtherItemRequests(userId, from, size);

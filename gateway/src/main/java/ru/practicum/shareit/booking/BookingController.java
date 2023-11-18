@@ -13,8 +13,6 @@ import ru.practicum.shareit.exceptions.BadRequestException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 
 @Controller
 @RequestMapping(path = "/bookings")
@@ -23,19 +21,20 @@ import javax.validation.constraints.PositiveOrZero;
 @Validated
 public class BookingController {
     private final BookingClient bookingClient;
+    private static final String OWNER = "X-Sharer-User-Id";
 
     @PostMapping
-    public ResponseEntity<Object> addBooking(@RequestHeader("X-Sharer-User-Id") @Min(1) Long ownerId,
+    public ResponseEntity<Object> addBooking(@RequestHeader(OWNER) @Min(1) Long ownerId,
                                              @Valid @RequestBody BookItemRequestDto bookingDto) {
         log.info("запрос на добавление бронирования: " + bookingDto);
         return bookingClient.addBooking(ownerId, bookingDto);
     }
 
     @GetMapping
-    public ResponseEntity<Object> getBookings(@RequestHeader("X-Sharer-User-Id") @Min(1) Long userId,
+    public ResponseEntity<Object> getBookings(@RequestHeader(OWNER) @Min(1) Long userId,
                                               @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                              @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                              @Min(0) @RequestParam(defaultValue = "0") Integer from,
+                                              @Min(1) @RequestParam(defaultValue = "10") Integer size) {
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new BadRequestException("Unknown state: " + stateParam));
         log.info("Получение бронирования со статусом {}, userId={}, from={}, size={}", stateParam, userId, from, size);
@@ -43,10 +42,10 @@ public class BookingController {
     }
 
     @GetMapping("/owner")
-    public ResponseEntity<Object> getBookingOwner(@RequestHeader("X-Sharer-User-Id") @Min(1) Long userId,
+    public ResponseEntity<Object> getBookingOwner(@RequestHeader(OWNER) @Min(1) Long userId,
                                                   @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                                  @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                                  @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                                  @Min(0) @RequestParam(defaultValue = "0") Integer from,
+                                                  @Min(1) @RequestParam(defaultValue = "10") Integer size) {
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new BadRequestException("Unknown state: " + stateParam));
         log.info("получение бронирования со статусом {}, userId={}, from={}, size={}", stateParam, userId, from, size);
@@ -54,14 +53,14 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public ResponseEntity<Object> getBooking(@RequestHeader("X-Sharer-User-Id") @Min(1) Long userId,
+    public ResponseEntity<Object> getBooking(@RequestHeader(OWNER) @Min(1) Long userId,
                                              @PathVariable @Min(1) Long bookingId) {
         log.info("Get booking {}, userId={}", bookingId, userId);
         return bookingClient.getBooking(userId, bookingId);
     }
 
     @PatchMapping("/{bookingId}")
-    public ResponseEntity<Object> approveStatus(@RequestHeader("X-Sharer-User-Id") @Min(1) Long userId,
+    public ResponseEntity<Object> approveStatus(@RequestHeader(OWNER) @Min(1) Long userId,
                                                 @PathVariable @Min(1) Long bookingId,
                                                 @RequestParam boolean approved) {
         log.info("Подтверждение статуса бронирования {}", bookingId);

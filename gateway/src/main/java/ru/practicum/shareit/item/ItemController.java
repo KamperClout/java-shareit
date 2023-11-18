@@ -10,8 +10,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
+
 
 @Controller
 @RequestMapping("/items")
@@ -23,8 +22,8 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Object> getItems(@RequestHeader(OWNER) @Min(1) Long userId,
-                                           @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                           @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                           @Min(0) @RequestParam(defaultValue = "0") Integer from,
+                                           @Min(1) @RequestParam(defaultValue = "10") Integer size) {
         log.info("Получение всех вещей пользователя {}", userId);
         return itemClient.getItems(userId, from, size);
     }
@@ -60,8 +59,8 @@ public class ItemController {
     @GetMapping("/search")
     public ResponseEntity<Object> searchItem(@RequestHeader(OWNER) Long userId,
                                              @RequestParam(required = false) String text,
-                                             @RequestParam(required = false, defaultValue = "0") Integer from,
-                                             @RequestParam(required = false, defaultValue = "20") Integer size) {
+                                             @RequestParam(defaultValue = "0") Integer from,
+                                             @RequestParam(defaultValue = "20") Integer size) {
         log.info("Поиск вещи по тексту {}", text);
         return itemClient.searchItem(userId, text, from, size);
     }
